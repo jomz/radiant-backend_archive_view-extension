@@ -1,0 +1,14 @@
+- unless simple
+  %td.actions
+    - unless page.class.to_s =~ /TreePage/
+      - if page.respond_to?('children')
+        = link_to image('copy-move', :alt => 'CopyMove') + ' ' + t('copy_move.button'), "#copy_move_#{page.id}", :class => "action dropdown"
+        %ul.menu{:id => "copy_move_#{page.id}"}
+          - if page.children.any?
+            %li.copy_page_only= link_to image('page_white') + ' ' + t('copy_move.copy_page_only'), copy_page_path(page.id), :class => 'popup'
+            %li.copy_with_first_level_children= link_to image('page_white_copy') + ' ' + t('copy_move.copy_with_first_level_children'), copy_children_path(page.id), :class => 'popup'
+            %li.copy_whole_subtree= link_to image('page_white_stack') + ' ' + t('copy_move.copy_whole_subtree'), copy_tree_path(page.id), :class => 'popup'
+            %li.move_entire_subtree= link_to image('page_white_go') + ' ' + t('copy_move.move_entire_subtree'), move_page_path(page.id), :class => 'popup'
+          - else
+            %li.copy_page= link_to image('page_white') + ' ' + t('copy_move.copy_page'), copy_page_path(page.id), :class => 'popup'
+            %li.move_page= link_to image('page_white_go') + ' ' + t('copy_move.move_page'), move_page_path(page.id), :class => 'popup'

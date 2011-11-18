@@ -1,0 +1,51 @@
+- pages.each do |page|
+  - next if page.try(:sheet?)
+  - prepare_node(page)
+  
+  %tr.page{:class =>"level_#{level}#{children_class}#{virtual_class}", :id => "page_#{page.id}"}
+    - render_region :node, :locals => {:page => page, :level => level, :simple => simple} do |node|
+      - node.title_column do
+        %td.name{:style => "padding-left: #{padding_left(level)}px"}
+          %span.w1
+            - if simple
+              = icon
+              = node_title
+            - else
+              = expander(level) 
+              - unless page.class.to_s =~ /TreePage/
+                = link_to("#{icon} #{node_title}", edit_admin_page_url(page), :title => page.url)
+              - else
+                = "#{icon} #{node_title}"
+              = page_type
+              = spinner
+      - node.status_column do
+        - unless simple
+          %td.status
+            - unless page.class.to_s =~ /TreePage/
+              %span.status{:class => "#{page.status.name.downcase}_status", :title => "#{timestamp(page.published_at) if page.published_at}"}
+                = t(page.status.name.downcase)
+                - if page.parent.try(:class_name) =~ /ArchivePage/ && page.published_at
+                  %br
+                  %small= I18n.l page.published_at, :format => (:short)
+      - node.actions_column do
+        - unless simple
+          %td.actions
+            - unless page.class.to_s =~ /TreePage/
+              = page.add_child_option
+              = page.remove_option
+
+  - if expanded
+    - if page.respond_to?(:tree_children)
+      - if page.tree_children.size > 15
+        = render_nodes page.tree_children[0...15], :level => level + 1, :simple => simple
+        %tr{:class => "level_#{level + 1} node_fetcher"}
+          %td.nodes_fetcher{:style => "padding-left: #{padding_left(level)}px; text-align: center", :colspan => 4}
+            %a.more_node_fetcher{:href => "#"}= t("more") + " " + t("pages").downcase
+            = image('spinner.gif', :class => 'busy', :id => "node_fetcher_#{page.id}_spinner",
+                    :alt => "",  :title => "",
+                    :style => 'display: none;')
+      - else
+        = render_nodes page.tree_children, :level => level + 1, :simple => simple
+    - else
+      = render_nodes page.children, :level => level + 1, :simple => simple
+  
