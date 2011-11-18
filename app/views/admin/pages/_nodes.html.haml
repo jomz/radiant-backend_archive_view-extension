@@ -1,5 +1,5 @@
 - pages.each do |page|
-  - next if page.try(:sheet?)
+  - next if page.respond_to?(:sheet?) && page.sheet?
   - prepare_node(page)
   
   %tr.page{:class =>"level_#{level}#{children_class}#{virtual_class}", :id => "page_#{page.id}"}
