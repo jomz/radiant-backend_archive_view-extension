@@ -46,6 +46,9 @@
                     :style => 'display: none;')
       - else
         = render_nodes page.tree_children, :level => level + 1, :simple => simple
+      - page.children.select{|c| c.class_name =~ /Archive(.*)IndexPage/}.each do |archive_index|
+        = render_node archive_index, :level => level + 1, :simple => simple
+    
     - else
       = render_nodes page.children, :level => level + 1, :simple => simple
   
