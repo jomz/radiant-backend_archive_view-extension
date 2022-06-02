@@ -12,7 +12,7 @@ module ArchivePageTreeStructure
     end
     tree_children #+ children.find(:all, :conditions => ['virtual = ?', true])
   end
-  
+
   def edge_date(first)
     if !first && children.find(:first, :conditions => 'updated_at is null')
       return Time.now
@@ -20,7 +20,7 @@ module ArchivePageTreeStructure
     order = first ? 'asc' : 'desc'
     child = children.find(:first, :order => "published_at #{order}", :conditions => 'not(published_at is null)')
     edge = child.published_at if child
-    child = children.find(:first, :order => "updated_at #{order}", :conditions => 'published_at is null and not(updated_at is null)')
+    child = children.find(:first, :order => "updated_at #{order}", :conditions => 'pages.published_at is null and not(pages.updated_at is null)')
     if child
       if first
         edge = child.updated_at if !edge || child.updated_at < edge
@@ -30,7 +30,7 @@ module ArchivePageTreeStructure
     end
     edge
   end
-  
+
   def tree_child(slug)
     first = [edge_date(true),Time.utc(slug.to_i)].max
     last = edge_date(false)
@@ -63,7 +63,7 @@ module ArchivePageTreeStructure
       Status.new(:name => ' ')
     end
   end
-  
+
   class ArchiveYearTreePage < ArchiveTreePage
     def initialize(parent, start_time, end_time=nil)
       @parent = parent
@@ -91,7 +91,7 @@ module ArchivePageTreeStructure
       ArchiveMonthTreePage.new(@parent, @start_time.beginning_of_year.months_since(slug.to_i - 1))
     end
   end
-  
+
   class ArchiveMonthTreePage < ArchiveTreePage
     def initialize(parent, start_time)
       @parent = parent
@@ -108,16 +108,16 @@ module ArchivePageTreeStructure
     end
     def tree_children
       end_time = @start_time.next_month.beginning_of_month
-      condition_string = 'virtual = ? and (published_at >= ? and published_at < ? or (published_at is null and ('
-      condition_string += 'updated_at is null or ' if Time.now.utc.beginning_of_month == @start_time.beginning_of_month
-      condition_string += '(updated_at >= ? and updated_at < ?))))'
-      @parent.children.find(:all, 
+      condition_string = 'pages.virtual = ? and (pages.published_at >= ? and pages.published_at < ? or (pages.published_at is null and ('
+      condition_string += 'pages.updated_at is null or ' if Time.now.utc.beginning_of_month == @start_time.beginning_of_month
+      condition_string += '(pages.updated_at >= ? and pages.updated_at < ?))))'
+      @parent.children.find(:all,
         :conditions => [
-          condition_string, 
+          condition_string,
           false,
-          @start_time, 
+          @start_time,
           end_time,
-          @start_time, 
+          @start_time,
           end_time,
           ],
         :order => 'published_at desc, updated_at desc'
